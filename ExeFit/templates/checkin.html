@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-In</title>
+    <script>
+        function checkLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const userLat = position.coords.latitude;
+                        const userLon = position.coords.longitude;
+
+                        // Send the user's location to the server
+                        fetch('/checkin/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({
+                                latitude: userLat,
+                                longitude: userLon
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message); // Show the server's response
+                        });
+                    },
+                    function(error) {
+                        alert("Unable to retrieve your location.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Check-In</h1>
+    <p>Click the button below to check in:</p>
+    <button onclick="checkLocation()">Check-In</button>
+</body>
+</html>

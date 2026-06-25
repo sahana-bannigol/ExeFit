@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sports Park{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+</head>
+<body id="home_page_body">
+    <!-- <div class="container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div> -->
+    <h2>Welcome to Sports Park</h2>
+    <p>Your ultimate place for fitness and fun! Please login or register to continue.</p>
+
+    <a href="{% url 'login' %}" class="btn">Login</a>
+    <a href="{% url 'register' %}" class="btn">Register</a>
+</body>
+</html>

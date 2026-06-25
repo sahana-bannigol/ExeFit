@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Activities{% endblock %}
+{% block content %}
+<h2>Activities</h2>
+<ul>
+    {% for activity in activities %}
+        <li>
+            <strong>{{ activity.name }}</strong> ({{ activity.duration_minutes }} mins) - £{{ activity.price }}
+            <a href="{% url 'book_activity' activity.id %}">Book</a>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

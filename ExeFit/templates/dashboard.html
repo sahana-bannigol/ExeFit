@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2>Welcome, {{ user.username }}!</h2>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4/web3.min.js"></script>
+
+
+{% if profile.is_membership_active %}
+<p><strong>Membership:</strong> Active (Expires on <span id="membershipStatus">{{ profile.membership_end }}</span>)</p>
+{% else %}
+    <p>
+    <form id="csrf-form" method="POST">
+        {% csrf_token %}
+    </form>
+    <strong>Membership:</strong> <button id="buyButton" onclick="buyMembership()"> Buy Now</button>
+    </p>
+{% endif %}
+
+<div id="progress-bar-container" style="display: none;">
+    <p>Processing transaction...</p>
+    <progress id="progress-bar" value="0" max="100" style="width: 100%;"></progress>
+</div>
+
+
+<script>
+    async function buyMembership() {
+        if (window.ethereum) {
+            const web3 = new Web3(window.ethereum);
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+            const accounts = await web3.eth.getAccounts();
+            const userAddress = accounts[0];
+
+            const contractAddress = "0xd9145CCE52D386f254917e481eB44e9943F39138"; // Replace with your contract address
+            const contractABI = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "expiryDate",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "paymentMethod",
+				"type": "string"
+			}
+		],
+		"name": "MembershipPurchased",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "workoutsession",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "rewardTokens",
+				"type": "uint256"
+			}
+		],
+		"name": "WorkoutLogged",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "buyMembershipWithToken",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "workoutsession",
+				"type": "uint256"
+			}
+		],
+		"name": "logWorkout",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdrawTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_gymToken",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "getCurrentWeekNumber",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "getCurrentWeekNumberFromTimestamp",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "gymToken",
+		"outputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "isMemberActive",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "members",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "isActive",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "expiryDate",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalTokens",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "workoutCountThisWeek",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "lastWorkoutTimestamp",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "membershipDuration",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "membershipFeeToken",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]; // Load your ABI here
+
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+        document.getElementById("progress-bar-container").style.display = "block";
+        try {
+                const tx = await contract.methods.buyMembershipWithToken().send({
+                    from: userAddress,
+                    value: web3.utils.toWei("0.05", "ether"),
+                });
+                document.getElementById("progress-bar").value = 100;
+                alert("Transaction successful! Hash: " + tx.transactionHash);
+                fetch('/dashboard/', {  // URL to the dashboard
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, // CSRF token for security
+                    },
+                    body: JSON.stringify({ transaction_hash: tx.transactionHash })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Server response:", data);
+                    if (data.status === 'success') {
+                        document.getElementById("buyButton").style.display = "none"; // Hides the "Buy Now" button
+                        document.getElementById("membershipStatus").innerHTML = "Membership Active until: " + data.expiration_date;
+                        alert("Membership successfully bought!");
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error sending transaction hash to server:", error);
+                    alert("Failed to update server with transaction hash");
+                });
+            } catch (error) {
+                console.error(error);
+                alert("Transaction failed: " + error.message);
+            } finally {
+            // Hide the progress bar after the transaction completes (whether successful or failed)
+            setTimeout(() => {
+                    document.getElementById("progress-bar-container").style.display = "none";
+                }, 1000); // Hide after 1 second for better UX
+            }
+        } else {
+            alert("Please install MetaMask!");
+        }
+    }
+</script>
+{% endblock %}

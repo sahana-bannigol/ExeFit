@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExeFit</title>
+    <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body style="background-color: white;">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>ExeFit</h1>
+        <a href="{% url 'logout' %}" class="logout-btn-header">Logout</a>
+    </div>
+
+    <!-- Sidebar + Main -->
+    <div style="display: flex;">
+        <!-- Sidebar -->
+        <aside class="sidebar" style="width: 220px;">
+            <nav>
+                <p><a href="{% url 'membership' %}">💳 Buy Membership</a></p>
+                <!-- <p><a href="{% url 'send_tokens' %}">💳 send tokens</a></p> -->
+                <button onclick="checkLocation()" class="checkin-btn"> Check-in</button>
+            </nav>
+            <!-- <div style="position: absolute; bottom: 1rem; left: 1rem; color: #e0e0e0; font-size: 0.9rem;">
+                <p>Logged in as:<br><strong>ExeFit Member101</strong></p>
+            </div> -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" style="flex: 1;">
+            <h2>Activities</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <!-- Gym Card -->
+                <div class="card blue">
+                    <h3>Gym</h3>
+                    <a href="#" class="book-btn">Book Session ➡</a>
+                </div>
+
+                <!-- Pilates Card -->
+                <div class="card yellow">
+                    <h3>Pilates</h3>
+                    <a href="#" class="book-btn">Book Session ➡</a>
+                    </div>
+    
+                    <!-- Yoga Card -->
+                    <div class="card green">
+                        <h3>Yoga</h3>
+                        <a href="#" class="book-btn">Book Session ➡</a>
+                    </div>
+    
+                    <!-- Dance Fitness Card -->
+                    <div class="card red">
+                        <h3>Dance Fitness</h3>
+                        <a href="#" class="book-btn">Book Session ➡</a>
+                    </div>
+    
+                </div>
+                </main>
+        </div>
+
+        
+        <script>
+        function checkLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const userLat = position.coords.latitude;
+                        const userLon = position.coords.longitude;
+
+                        // Send the user's location to the server
+                        fetch('/checkin/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({
+                                latitude: userLat,
+                                longitude: userLon
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message); // Show the server's response
+                        });
+                    },
+                    function(error) {
+                        alert("Unable to retrieve your location.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+        </script>
+    </body>
+    </html>
+    
